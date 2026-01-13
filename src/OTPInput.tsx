@@ -1,5 +1,5 @@
 // OTPInput.tsx
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   TextInput,
@@ -14,39 +14,28 @@ import {
 export interface OTPInputProps {
   length?: number;
   onComplete?: (code: string) => void;
-  onChange?: (code: string) => void;
+  onChangeValue?: (code: string) => void;
   containerStyle?: ViewStyle;
   inputStyle?: TextStyle;
-  boxStyle?: ViewStyle;
   focusBorderColor?: string;
   defaultBorderColor?: string;
-  autoFocus?: boolean;
-  secureTextEntry?: boolean;
 }
 
 const OTPInput: React.FC<OTPInputProps> = ({
   length = 6,
-  onComplete,
-  onChange,
+  onComplete = () => {},
+  onChangeValue = () => {},
   containerStyle,
   inputStyle,
-  boxStyle,
   focusBorderColor = "#28AF60",
-  defaultBorderColor = "#E0E0E0",
-  autoFocus = true,
-  secureTextEntry = false,
+  defaultBorderColor = "transparent",
 }) => {
   const [values, setValues] = useState<string[]>(
     Array.from({ length }, () => "")
   );
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-  const inputsRef = useRef<Array<TextInput | null>>([]);
 
-  useEffect(() => {
-    if (autoFocus) {
-      setTimeout(() => focusInput(0), 100);
-    }
-  }, [autoFocus]);
+  const inputsRef = useRef<Array<TextInput | null>>([]);
 
   const focusInput = (index: number) => {
     inputsRef.current[index]?.focus();
@@ -59,14 +48,13 @@ const OTPInput: React.FC<OTPInputProps> = ({
       const newVals = [...values];
       newVals[index] = "";
       setValues(newVals);
-      onChange?.(newVals.join(""));
       return;
     }
 
     const newVals = [...values];
     newVals[index] = filtered[0];
     setValues(newVals);
-    onChange?.(newVals.join(""));
+    onChangeValue(newVals.join(""));
 
     if (index < length - 1) {
       focusInput(index + 1);
@@ -75,7 +63,7 @@ const OTPInput: React.FC<OTPInputProps> = ({
     }
 
     if (newVals.every((v) => v !== "")) {
-      onComplete?.(newVals.join(""));
+      onComplete(newVals.join(""));
     }
   };
 
@@ -92,7 +80,6 @@ const OTPInput: React.FC<OTPInputProps> = ({
       const newVals = [...values];
       newVals[index - 1] = "";
       setValues(newVals);
-      onChange?.(newVals.join(""));
     }
   };
 
@@ -106,7 +93,6 @@ const OTPInput: React.FC<OTPInputProps> = ({
               key={i}
               style={[
                 styles.box,
-                boxStyle,
                 {
                   borderColor: isFocused
                     ? focusBorderColor
@@ -129,7 +115,6 @@ const OTPInput: React.FC<OTPInputProps> = ({
                 textAlign="center"
                 autoCorrect={false}
                 autoCapitalize="none"
-                secureTextEntry={secureTextEntry}
               />
             </View>
           );
@@ -154,10 +139,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "white",
     elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
   input: {
     width: "100%",
